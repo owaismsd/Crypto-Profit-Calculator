@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Crypto Profit Calculator</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f4f9;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+    .container {
+      background-color: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      width: 300px;
+    }
+    h2 {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    .input-field {
+      margin-bottom: 15px;
+    }
+    label {
+      font-size: 14px;
+      color: #333;
+    }
+    input[type="number"], input[type="button"] {
+      width: 100%;
+      padding: 10px;
+      margin-top: 5px;
+      font-size: 14px;
+      border-radius: 4px;
+      border: 1px solid #ccc;
+    }
+    .output {
+      margin-top: 20px;
+      font-size: 16px;
+      font-weight: bold;
+      color: #333;
+      text-align: center;
+    }
+  span{
+    color: grey;
+  }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <h2>Crypto Profit Calculator</h2>
+  
+  <div class="input-field">
+    <label for="investment">Enter your investment in USDT ($):</label>
+    <input type="number" id="investment" placeholder="e.g. 5" min="0">
+  </div>
+  
+  <div class="input-field">
+    <label for="ethPrice">Enter the current price in USDT ($):</label>
+    <input type="number" id="ethPrice" placeholder="e.g. 3834" min="0">
+  </div>
+  
+  <div class="input-field">
+    <label for="newPrice">Enter the target price in USDT ($):</label>
+    <input type="number" id="newPrice" placeholder="e.g. 4010" min="0">
+  </div>
+
+  <input type="button" value="Calculate Profit" onclick="calculateProfit()">
+  
+  <div class="output" id="result"></div>
+  <br>
+  <span>Developed by Owais Ahmad</span>
+</div>
+
+<script>
+  function calculateProfit() {
+    // Get input values
+    const investment = parseFloat(document.getElementById("investment").value);
+    const ethPrice = parseFloat(document.getElementById("ethPrice").value);
+    const newPrice = parseFloat(document.getElementById("newPrice").value);
+    
+    // Check if input values are valid
+    if (isNaN(investment) || isNaN(ethPrice) || isNaN(newPrice) || investment <= 0 || ethPrice <= 0 || newPrice <= 0) {
+      document.getElementById("result").textContent = "Please enter valid values.";
+      return;
+    }
+    
+    // Calculate ETH owned based on investment and current price
+    const ethOwned = investment / ethPrice;
+    
+    // Calculate the value of ETH at the new price
+    const valueAtNewPrice = ethOwned * newPrice;
+    
+    // Calculate the profit
+    const profit = valueAtNewPrice - investment;
+    
+    // Display the result
+    document.getElementById("result").textContent = `Your investment of $${investment.toFixed(2)} in ETH will be worth $${valueAtNewPrice.toFixed(2)} when ETH reaches $${newPrice}. Profit: $${profit.toFixed(2)}`;
+  }
+</script>
+
+</body>
+</html>
