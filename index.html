@@ -5,104 +5,220 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Crypto Profit Calculator</title>
   <style>
+    /* General Styles */
     body {
-      font-family: Arial, sans-serif;
-      background-color: #f4f4f9;
+      font-family: 'Arial', sans-serif;
+      margin: 0;
+      padding: 0;
+      background: #f9f9f9;
+      color: #333;
       display: flex;
       justify-content: center;
       align-items: center;
-      height: 100vh;
-      margin: 0;
+      min-height: 100vh;
     }
+
     .container {
-      background-color: white;
-      padding: 20px;
-      border-radius: 8px;
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-      width: 300px;
-    }
-    h2 {
+      background: #fff;
+      padding: 25px;
+      border-radius: 10px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+      max-width: 400px;
+      width: 90%;
       text-align: center;
-      margin-bottom: 20px;
     }
+
+    h2 {
+      font-size: 22px;
+      color: #4a4a4a;
+      margin-bottom: 15px;
+    }
+
     .input-field {
       margin-bottom: 15px;
     }
+
     label {
+      display: block;
       font-size: 14px;
-      color: #333;
+      color: #666;
+      margin-bottom: 6px;
     }
-    input[type="number"], input[type="button"] {
+
+    input[type="number"] {
       width: 100%;
       padding: 10px;
-      margin-top: 5px;
       font-size: 14px;
-      border-radius: 4px;
-      border: 1px solid #ccc;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      outline: none;
+      background: #f4f4f4;
+      transition: border-color 0.3s ease;
     }
+
+    input[type="number"]:focus {
+      border-color: #87cefa;
+    }
+
+    button {
+      width: 100%;
+      padding: 12px;
+      font-size: 14px;
+      font-weight: bold;
+      color: #fff;
+      background: #87cefa;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background 0.3s ease, transform 0.2s;
+    }
+
+    button:hover {
+      background: #5ca9e6;
+      transform: translateY(-2px);
+    }
+
+    button:disabled {
+      background: #ddd;
+      cursor: not-allowed;
+    }
+
+    button.loading {
+      position: relative;
+      color: transparent;
+    }
+
+    button.loading::after {
+      content: "";
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 20px;
+      height: 20px;
+      border: 3px solid #fff;
+      border-top: 3px solid transparent;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      transform: translate(-50%, -50%);
+    }
+
+    @keyframes spin {
+      0% {
+        transform: translate(-50%, -50%) rotate(0deg);
+      }
+      100% {
+        transform: translate(-50%, -50%) rotate(360deg);
+      }
+    }
+
     .output {
       margin-top: 20px;
       font-size: 16px;
-      font-weight: bold;
-      color: #333;
-      text-align: center;
+      color: #4a4a4a;
     }
-  span{
-    color: grey;
-  }
+
+    span {
+      display: block;
+      margin-top: 10px;
+      font-size: 12px;
+      color: #aaa;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 600px) {
+      h2 {
+        font-size: 20px;
+      }
+
+      button {
+        font-size: 13px;
+      }
+    }
   </style>
 </head>
 <body>
 
 <div class="container">
   <h2>Crypto Profit Calculator</h2>
-  
+
   <div class="input-field">
-    <label for="investment">Enter your investment in USDT ($):</label>
-    <input type="number" id="investment" placeholder="e.g. 5" min="0">
-  </div>
-  
-  <div class="input-field">
-    <label for="ethPrice">Enter the current price in USDT ($):</label>
-    <input type="number" id="ethPrice" placeholder="e.g. 3834" min="0">
-  </div>
-  
-  <div class="input-field">
-    <label for="newPrice">Enter the target price in USDT ($):</label>
-    <input type="number" id="newPrice" placeholder="e.g. 4010" min="0">
+    <label for="investment">Investment (USDT):</label>
+    <input type="number" id="investment" placeholder="Enter your investment">
   </div>
 
-  <input type="button" value="Calculate Profit" onclick="calculateProfit()">
-  
+  <div class="input-field">
+    <label for="ethPrice">Current Price (USDT):</label>
+    <input type="number" id="ethPrice" placeholder="Enter current price">
+  </div>
+
+  <div class="input-field">
+    <label for="newPrice">Target Price (USDT):</label>
+    <input type="number" id="newPrice" placeholder="Enter target price">
+  </div>
+
+  <button id="calculateButton" onclick="calculateProfit()">Calculate Profit</button>
+
   <div class="output" id="result"></div>
-  <br>
-  <span>Developed by Owais Ahmad</span>
+  <span>Made ❤️ by Owais Ahmad</span>
 </div>
 
 <script>
-  function calculateProfit() {
-    // Get input values
-    const investment = parseFloat(document.getElementById("investment").value);
-    const ethPrice = parseFloat(document.getElementById("ethPrice").value);
-    const newPrice = parseFloat(document.getElementById("newPrice").value);
-    
-    // Check if input values are valid
-    if (isNaN(investment) || isNaN(ethPrice) || isNaN(newPrice) || investment <= 0 || ethPrice <= 0 || newPrice <= 0) {
-      document.getElementById("result").textContent = "Please enter valid values.";
-      return;
+  // Function to fetch live dollar price and save to cache
+  async function fetchDollarPrice() {
+    try {
+      const response = await fetch("https://api.exchangerate-api.com/v4/latest/USD");
+      const data = await response.json();
+      const pkrRate = data.rates.PKR;
+
+      // Cache the rate locally
+      localStorage.setItem("cachedDollarPrice", pkrRate);
+      localStorage.setItem("lastFetchedTime", new Date().toISOString());
+      return pkrRate;
+    } catch (error) {
+      // Use cached value if available
+      const cachedRate = localStorage.getItem("cachedDollarPrice");
+      if (cachedRate) {
+        return parseFloat(cachedRate);
+      }
+      throw new Error("Unable to fetch live price, and no cached data available.");
     }
-    
-    // Calculate ETH owned based on investment and current price
-    const ethOwned = investment / ethPrice;
-    
-    // Calculate the value of ETH at the new price
-    const valueAtNewPrice = ethOwned * newPrice;
-    
-    // Calculate the profit
-    const profit = valueAtNewPrice - investment;
-    
-    // Display the result
-    document.getElementById("result").textContent = `Your investment of $${investment.toFixed(2)} will be worth $${valueAtNewPrice.toFixed(2)} when the Coin reaches $${newPrice}. Profit: $${profit.toFixed(2)}`;
+  }
+
+  async function calculateProfit() {
+    const button = document.getElementById("calculateButton");
+    button.disabled = true;
+    button.classList.add("loading");
+
+    try {
+      const investment = parseFloat(document.getElementById("investment").value);
+      const ethPrice = parseFloat(document.getElementById("ethPrice").value);
+      const newPrice = parseFloat(document.getElementById("newPrice").value);
+
+      if (isNaN(investment) || isNaN(ethPrice) || isNaN(newPrice) || investment <= 0 || ethPrice <= 0 || newPrice <= 0) {
+        document.getElementById("result").textContent = "Please enter valid values.";
+        button.disabled = false;
+        button.classList.remove("loading");
+        return;
+      }
+
+      const dollarToPkr = await fetchDollarPrice();
+
+      const ethOwned = investment / ethPrice;
+      const valueAtNewPrice = ethOwned * newPrice;
+      const profit = valueAtNewPrice - investment;
+      const profitInPkr = profit * dollarToPkr;
+
+      document.getElementById("result").innerHTML = `
+        Investment: $${investment.toFixed(2)}<br>
+        Value at Target: $${valueAtNewPrice.toFixed(2)}<br>
+        Profit: $${profit.toFixed(2)} (${profitInPkr.toFixed(2)} PKR)
+      `;
+    } catch (error) {
+      document.getElementById("result").textContent = "Error fetching live data. Please check your internet connection.";
+    }
+
+    button.disabled = false;
+    button.classList.remove("loading");
   }
 </script>
 
